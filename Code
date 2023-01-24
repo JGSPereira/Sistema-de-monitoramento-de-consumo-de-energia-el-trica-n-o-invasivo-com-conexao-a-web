@@ -1,0 +1,55 @@
+#include <esp8266wifi.h>
+#include <SPI.h>
+#include "EmonLib.h"
+EnergyMonitor emon1;
+#define pin A0
+#define calib 90.9
+#define volt 127
+
+const char* ssid = "SSID";
+const char* password = "SENHA";
+const char* host = "emoncms.org";
+int port = 80;
+const chat* apikey = "APIKEY"
+int updatedata = 2400
+const char* inputname = "power"
+int nodedata = 10;
+
+void setup ()
+{Serial.begin (115200);
+Serial.println ("ESP8266 in normal mode");
+WiFi.begin (ssid, password); while
+(WiFi.status () != WL_CONNECTED) {
+delay (500);
+Serial.print (".");}
+Serial.println (" ");
+Serial.println ("WiFi connected");
+Serial.print (WiFi.localIP());
+emonl.current (pin, calib);)
+Void
+loop()
+(Serial.print("Connecting to");
+Serial.println (host);
+WiFiClient client;
+if (!client.connect (host, port)) {
+Serial.println ("connection failed");
+return; }
+double Irms = emon1.calcIrms (1480);
+Serial.print (Irms*volt);
+Serial.println (Irms);
+int value = (Irms*volt);
+long rssi = WiFi.RSSI ();
+client.print ("GET /emoncms/input/post.json?node="+String (nodedata) + "&json={" +inputname+ ":" + 
+String (value) +","+"RSSI:"+String(rssi)+"}%apikey="+apikey + " HTTP/1.1\r\n"+
+"Host: " + host + "\r\n" +
+"Connection: close \r\n\r\n");
+unsigned long timeout = millis (); while
+(client.available () == 0 ) { if (millis ()
+- timeout > 5000) { Serial.println(">>> Client Timeout !"); client.stop();
+return;}}}
+while (client.available()){
+String line = client.readStringUntil ('\r');
+Serial.print (line);}
+Serial.println();
+Serial.println("closing connection");
+delay (updatedata);}
